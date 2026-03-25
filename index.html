@@ -215,10 +215,19 @@ async function bookScript(){
     const data = await res.json();
 
     if(data.ok){
-      refreshUI(data.claimed);
-      showMsg('');
-      document.getElementById('win-screen').style.display='flex';
-    } else if(data.reason==='already_claimed'){
+  refreshUI(data.claimed);
+  showMsg('');
+  // verify token before showing win screen
+  const vRes = await fetch('/api/verify', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ token: data.token })
+  });
+  const vData = await vRes.json();
+  if(vData.valid){
+    document.getElementById('win-screen').style.display='flex';
+  }
+}else if(data.reason==='already_claimed'){
       refreshUI(data.claimed);
       showMsg('msg-booked');
     } else {
