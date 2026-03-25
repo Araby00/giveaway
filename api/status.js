@@ -11,8 +11,8 @@ export default async function handler(req, res) {
   const claimed = parseInt(rows[0].count);
   res.json({
     claimed,
-    max: 3,
-    full: claimed >= 3,
+    max: 1,
+    full: claimed >= 1,
     alreadyClaimed: !!(await sql`SELECT 1 FROM claims WHERE ip=${ip}`).length
   });
 }
