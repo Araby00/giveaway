@@ -256,16 +256,21 @@ let secs = Math.max(0, Math.floor((target - Date.now()) / 1000));
   }
 
   (function tick(){
-    mEl.textContent=String(Math.floor(secs/60)).padStart(2,'0');
-    sEl.textContent=String(secs%60).padStart(2,'0');
-    if(secs<=0){
-      document.getElementById('cd-section').style.display='none';
-      loadStatus();
-      return;
-    }
-    secs--;
-    setTimeout(tick,1000);
-  })();
+  const h = Math.floor(secs/3600);
+  const m = Math.floor((secs%3600)/60);
+  const s = secs%60;
+  document.getElementById('cdm').textContent = 
+    (h > 0 ? String(h).padStart(2,'0')+':' : '') +
+    String(m).padStart(2,'0');
+  document.getElementById('cds').textContent = String(s).padStart(2,'0');
+  if(secs<=0){
+    document.getElementById('cd-section').style.display='none';
+    loadStatus();
+    return;
+  }
+  secs--;
+  setTimeout(tick,1000);
+})();
 }
 
 init();
