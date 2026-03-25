@@ -211,7 +211,7 @@ function showMsg(id){
 async function bookScript(){
   showMsg('msg-loading');
   try{
-    const res = await fetch(API+'/claim',{method:'POST'});
+    const res = await fetch('/api/claim', {method: 'POST'});
     const data = await res.json();
 
     if(data.ok){
@@ -243,7 +243,7 @@ let secs = Math.max(0, Math.floor((target - Date.now()) / 1000));
 
   async function loadStatus(){
     try{
-      const res = await fetch(API+'/status');
+      const res = await fetch('/api/status');
       const data = await res.json();
       refreshUI(data.claimed);
       if(data.full){ showMsg('msg-full'); return; }
