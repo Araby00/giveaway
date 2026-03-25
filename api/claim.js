@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const claimed = parseInt(rows[0].count);
     const already = await sql`SELECT token FROM claims WHERE ip=${ip}`;
     if (already.length) return res.json({ ok: false, reason: 'already_claimed', claimed });
-    if (claimed >= 3) return res.json({ ok: false, reason: 'full', claimed });
+    if (claimed >= 1) return res.json({ ok: false, reason: 'full', claimed });
     const token = generateToken();
     await sql`INSERT INTO claims (ip, token) VALUES (${ip}, ${token})`;
     res.json({ ok: true, claimed: claimed + 1, slot: claimed + 1, token });
