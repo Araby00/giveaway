@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>./book_script.sh</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#010b00;--g0:#00ff41;--g1:#00cc33;--g2:#009922;--g3:#006614;
+  --g4:rgba(0,255,65,0.07);--g5:rgba(0,255,65,0.03);
+  --red:#ff2233;--dim:#1a3a1a;--muted:#2a5a2a;--text:#7fff7f;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--g0);font-family:'Fira Code',monospace;display:flex;align-items:center;justify-content:center;overflow-x:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.25) 2px,rgba(0,0,0,0.25) 4px);pointer-events:none;z-index:999;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.8) 100%);pointer-events:none;z-index:998;}
+#matrix{position:fixed;inset:0;opacity:0.12;z-index:0;pointer-events:none;}
+.wrap{position:relative;z-index:10;width:100%;max-width:560px;padding:20px 16px 32px;display:flex;flex-direction:column;align-items:flex-start;}
+.topbar{width:100%;border:1px solid var(--g3);background:rgba(0,20,0,0.7);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--g2);letter-spacing:0.5px;}
+.topbar .dots{display:flex;gap:6px;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot.r{background:#ff5f56;}.dot.y{background:#ffbd2e;}.dot.g{background:#27c93f;}
+.topbar .path{color:var(--g0);font-weight:500;}
+.terminal{width:100%;border:1px solid var(--g3);border-top:none;background:rgba(0,10,0,0.85);padding:24px 24px 28px;backdrop-filter:blur(4px);}
+.prompt-line{display:flex;align-items:baseline;gap:8px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--g2);margin-bottom:6px;white-space:pre-wrap;}
+.prompt-line .ps{color:var(--g1);flex-shrink:0;}.prompt-line .cmd{color:var(--g0);}.prompt-line .out{color:var(--text);font-size:11px;}.prompt-line .err{color:var(--red);font-size:11px;}
+.title-block{margin:18px 0 6px;font-family:'VT323',monospace;font-size:clamp(52px,14vw,80px);color:var(--g0);line-height:0.9;text-shadow:0 0 20px rgba(0,255,65,0.5),0 0 60px rgba(0,255,65,0.15);letter-spacing:2px;}
+.title-block .sub-t{display:block;font-size:clamp(28px,8vw,44px);color:var(--g2);letter-spacing:4px;}
+.blink{animation:blink 1s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+.divider{width:100%;border:none;border-top:1px dashed var(--g3);margin:16px 0;}
+.status-row{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--g2);font-family:'Share Tech Mono',monospace;margin-bottom:18px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--g0);box-shadow:0 0 8px var(--g0);animation:pulse 1.8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
+.slots{display:flex;gap:8px;width:100%;margin-bottom:20px;}
+.slot{flex:1;border:1px solid var(--g3);background:rgba(0,255,65,0.03);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;transition:all 0.4s;position:relative;overflow:hidden;}
+.slot::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.06),transparent);transition:left 0.5s;}
+.slot.available:hover::before{left:100%;}
+.slot.available{border-color:var(--g2);background:rgba(0,255,65,0.05);}
+.slot.taken{border-color:rgba(255,34,51,0.3);background:rgba(255,34,51,0.04);}
+.slot-id{font-size:18px;color:var(--g3);font-weight:600;transition:color 0.4s;}
+.slot.available .slot-id{color:var(--g0);text-shadow:0 0 10px rgba(0,255,65,0.4);}
+.slot.taken .slot-id{color:rgba(255,34,51,0.5);text-decoration:line-through;}
+.slot-status{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);transition:color 0.4s;}
+.slot.available .slot-status{color:var(--g2);}.slot.taken .slot-status{color:rgba(255,34,51,0.4);}
+.slot-bar{width:100%;height:2px;background:var(--g3);margin-top:6px;position:relative;overflow:hidden;}
+.slot.available .slot-bar::after{content:'';position:absolute;top:0;left:0;height:100%;width:40%;background:var(--g0);animation:bar-scan 2.5s linear infinite;box-shadow:0 0 6px var(--g0);}
+@keyframes bar-scan{0%{left:-40%;}100%{left:140%;}}
+.slot.taken .slot-bar{background:rgba(255,34,51,0.3);}
+#cd-section{width:100%;background:rgba(0,255,65,0.03);border:1px solid var(--g3);padding:14px 18px;margin-bottom:18px;font-family:'Share Tech Mono',monospace;}
+.cd-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--g3);margin-bottom:6px;}
+.cd-timer{font-family:'VT323',monospace;font-size:clamp(48px,14vw,72px);color:var(--g0);line-height:1;text-shadow:0 0 30px rgba(0,255,65,0.4);letter-spacing:4px;}
+.cd-sep{animation:blink 1s step-end infinite;color:var(--g2);}
+#book-btn{display:none;width:100%;padding:16px 24px;font-family:'Fira Code',monospace;font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--bg);background:var(--g0);border:none;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.15s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);box-shadow:0 0 40px rgba(0,255,65,0.4),0 0 80px rgba(0,255,65,0.15);animation:btn-glow 2s ease-in-out infinite;}
+@keyframes btn-glow{0%,100%{box-shadow:0 0 40px rgba(0,255,65,0.4),0 0 80px rgba(0,255,65,0.15);}50%{box-shadow:0 0 60px rgba(0,255,65,0.7),0 0 120px rgba(0,255,65,0.25);}}
+#book-btn::before{content:'> ';font-family:'VT323',monospace;font-size:20px;}
+#book-btn::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,0,0,0.2),transparent);animation:sweep 2.5s ease-in-out infinite;}
+@keyframes sweep{0%{left:-60%;}60%,100%{left:110%;}}
+#book-btn:hover{transform:translateY(-2px);}#book-btn:active{transform:scale(0.98);}
+.msg{display:none;width:100%;padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;align-items:center;gap:10px;border:1px solid;}
+#msg-loading{border-color:var(--g3);color:var(--g2);background:rgba(0,255,65,0.03);}
+#msg-full{border-color:rgba(255,34,51,0.3);color:var(--red);background:rgba(255,34,51,0.05);}
+#msg-booked{border-color:var(--g3);color:var(--g2);background:rgba(0,255,65,0.03);}
+#msg-booked a{color:var(--g0);font-weight:700;text-decoration:none;}
+.spin{width:12px;height:12px;border:2px solid var(--g3);border-top-color:var(--g0);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.log-line{font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--g3);margin-top:14px;letter-spacing:0.5px;}
+.log-line span{color:var(--g2);}
+.glitch{position:relative;animation:glitch-main 5s infinite;}
+@keyframes glitch-main{0%,94%,96%,100%{transform:none;filter:none;}95%{transform:skewX(-5deg);filter:hue-rotate(90deg);}}
+
+/* WIN SCREEN */
+#win-screen{display:none;position:fixed;inset:0;background:rgba(0,8,0,0.97);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.win-terminal{width:100%;max-width:480px;animation:enter 0.5s cubic-bezier(0.22,1,0.36,1) both;}
+@keyframes enter{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.win-topbar{background:var(--g0);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--bg);font-weight:700;}
+.win-body{border:1px solid var(--g2);border-top:none;background:rgba(0,10,0,0.95);padding:28px 24px;}
+.win-ascii{font-family:'VT323',monospace;font-size:13px;color:var(--g2);line-height:1.3;margin-bottom:20px;white-space:pre;}
+.win-title{font-family:'VT323',monospace;font-size:clamp(48px,12vw,72px);color:var(--g0);text-shadow:0 0 30px rgba(0,255,65,0.6);line-height:1;margin-bottom:4px;}
+.win-title .acc{color:#fff;}
+.win-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--g2);margin-bottom:24px;line-height:1.8;}
+.win-steps{width:100%;border:1px solid var(--g3);margin-bottom:18px;}
+.win-step{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-bottom:1px dashed var(--g3);font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);line-height:1.6;}
+.win-step:last-child{border-bottom:none;}
+.win-step .n{color:var(--g0);flex-shrink:0;min-width:20px;}
+.win-step strong{color:var(--g0);}
+.tg-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:transparent;border:1px solid var(--g0);color:var(--g0);font-family:'Fira Code',monospace;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:all 0.2s;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);}
+.tg-btn:hover{background:var(--g0);color:var(--bg);box-shadow:0 0 40px rgba(0,255,65,0.4);}
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<!-- WIN SCREEN -->
+<div id="win-screen">
+  <div class="win-terminal">
+    <div class="win-topbar"><span>ACCESS_GRANTED.sh</span><span>█</span></div>
+    <div class="win-body">
+      <pre class="win-ascii">
+ ██████╗ ██╗  ██╗
+██╔═══██╗██║ ██╔╝
+██║   ██║█████╔╝ 
+██║   ██║██╔═██╗ 
+╚██████╔╝██║  ██╗
+ ╚═════╝ ╚═╝  ╚═╝</pre>
+      <div class="win-title"><span class="acc">ACCESS</span><br/>GRANTED<span class="blink">_</span></div>
+      <p class="win-sub">
+        [+] Authorization confirmed.<br/>
+        [+] You are 1 of 3 selected nodes.<br/>
+        [+] Follow protocol to receive access.
+      </p>
+      <div class="win-steps">
+        <div class="win-step"><span class="n">[01]</span><div><strong>Screenshot</strong> this terminal — store as proof.bin</div></div>
+        <div class="win-step"><span class="n">[02]</span><div><strong>Open Telegram</strong> — locate @araby_001</div></div>
+        <div class="win-step"><span class="n">[03]</span><div><strong>Send screenshot</strong> to authenticate &amp; unlock access</div></div>
+      </div>
+      <a href="https://t.me/araby_001" target="_blank" class="tg-btn">$ connect @araby_001</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="wrap">
+  <div class="topbar">
+    <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    <span class="path">~/scripts/book_script.sh</span>
+    <span>bash v5.2</span>
+  </div>
+  <div class="terminal">
+    <div class="prompt-line"><span class="ps">root@node:~$</span><span class="cmd">./init_booking.sh --slots=3</span></div>
+    <div class="prompt-line"><span class="ps">&gt;</span><span class="out">[OK] System online. 3 allocation slots detected.</span></div>
+    <div class="prompt-line" style="margin-bottom:14px;"><span class="ps">&gt;</span><span class="out">[INFO] First-come-first-served. IP-lock active.</span></div>
+
+    <div class="title-block glitch">BOOK<br/><span class="sub-t">YOUR SCRIPT<span class="blink">_</span></span></div>
+    <hr class="divider"/>
+    <div class="status-row"><div class="status-dot"></div><span>LIVE — 3 SLOTS ONLY — 1 IP = 1 CLAIM</span></div>
+
+    <div class="slots" id="scripts-grid">
+      <div class="slot available" id="sc1"><div class="slot-id">0x01</div><div class="slot-status">Available</div><div class="slot-bar"></div></div>
+      <div class="slot available" id="sc2"><div class="slot-id">0x02</div><div class="slot-status">Available</div><div class="slot-bar"></div></div>
+      <div class="slot available" id="sc3"><div class="slot-id">0x03</div><div class="slot-status">Available</div><div class="slot-bar"></div></div>
+    </div>
+
+    <div id="cd-section">
+      <div class="cd-label">// time until access opens</div>
+      <div class="cd-timer"><span id="cdm">00</span><span class="cd-sep">:</span><span id="cds">00</span></div>
+    </div>
+
+    <button id="book-btn" onclick="bookScript()">CLAIM SLOT</button>
+    <div id="msg-loading" class="msg"><span class="spin"></span>[...] Contacting server. Please wait.</div>
+    <div id="msg-full" class="msg">[ERR] All slots claimed. Connection refused.</div>
+    <div id="msg-booked" class="msg">[WARN] IP already registered. DM <a href="https://t.me/araby_001">@araby_001</a> to verify.</div>
+
+    <div class="log-line">// <span id="log-ts">--</span> | IP-lock: ON | no-log mode</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// ⚠️  PASTE YOUR RAILWAY/RENDER URL HERE ⚠️
+// Example: 'https://my-app.railway.app'
+const API = 'https://YOUR_BACKEND_URL_HERE';
+// ══════════════════════════════════════════
+
+const MAX = 3;
+
+/* Matrix Rain */
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+const cols = Math.floor(canvas.width/16);
+const drops = Array(cols).fill(1);
+const chars = 'アイウエオカキクケコABCDEF0123456789<>/\\{}[]|;:!@#$%^&*';
+function drawMatrix(){
+  ctx.fillStyle='rgba(1,11,0,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  drops.forEach((y,i)=>{
+    ctx.fillStyle=i%5===0?'#00ff41':'#006614';
+    ctx.font='14px Share Tech Mono';
+    ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*16,y*16);
+    if(y*16>canvas.height&&Math.random()>0.975)drops[i]=0;
+    drops[i]++;
+  });
+}
+setInterval(drawMatrix,50);
+
+/* Timestamp */
+function updateTS(){document.getElementById('log-ts').textContent=new Date().toISOString().replace('T',' ').substring(0,19);}
+setInterval(updateTS,1000);updateTS();
+
+/* UI */
+function refreshUI(count){
+  for(let i=1;i<=MAX;i++){
+    const el=document.getElementById('sc'+i);
+    const taken=i<=count;
+    el.className='slot '+(taken?'taken':'available');
+    el.querySelector('.slot-status').textContent=taken?'Claimed':'Available';
+  }
+}
+
+function showMsg(id){
+  ['book-btn','msg-loading','msg-full','msg-booked'].forEach(x=>{
+    const el=document.getElementById(x);
+    el.style.display=(x===id)?(x==='book-btn'?'block':'flex'):'none';
+  });
+}
+
+/* Claim */
+async function bookScript(){
+  showMsg('msg-loading');
+  try{
+    const res = await fetch(API+'/claim',{method:'POST'});
+    const data = await res.json();
+
+    if(data.ok){
+      refreshUI(data.claimed);
+      showMsg('');
+      document.getElementById('win-screen').style.display='flex';
+    } else if(data.reason==='already_claimed'){
+      refreshUI(data.claimed);
+      showMsg('msg-booked');
+    } else {
+      refreshUI(data.claimed);
+      showMsg('msg-full');
+    }
+  } catch(e){
+    console.error(e);
+    showMsg('msg-full');
+    // fallback message
+    document.getElementById('msg-full').textContent='[ERR] Cannot reach server. Try again.';
+  }
+}
+
+/* Init — load current status on page load */
+async function init(){
+  // Start countdown, then load status when it hits 0
+  let secs = 1 * 60;
+  const mEl=document.getElementById('cdm');
+  const sEl=document.getElementById('cds');
+
+  async function loadStatus(){
+    try{
+      const res = await fetch(API+'/status');
+      const data = await res.json();
+      refreshUI(data.claimed);
+      if(data.full){ showMsg('msg-full'); return; }
+      if(data.alreadyClaimed){ showMsg('msg-booked'); return; }
+      showMsg('book-btn');
+    } catch(e){
+      // If server unreachable just show button
+      showMsg('book-btn');
+    }
+  }
+
+  (function tick(){
+    mEl.textContent=String(Math.floor(secs/60)).padStart(2,'0');
+    sEl.textContent=String(secs%60).padStart(2,'0');
+    if(secs<=0){
+      document.getElementById('cd-section').style.display='none';
+      loadStatus();
+      return;
+    }
+    secs--;
+    setTimeout(tick,1000);
+  })();
+}
+
+init();
+</script>
+</body>
+</html>
