@@ -33,21 +33,21 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .status-row{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--g2);font-family:'Share Tech Mono',monospace;margin-bottom:18px;}
 .status-dot{width:8px;height:8px;border-radius:50%;background:var(--g0);box-shadow:0 0 8px var(--g0);animation:pulse 1.8s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
-.slots{display:flex;gap:8px;width:100%;margin-bottom:20px;}
-.slot{flex:1;border:1px solid var(--g3);background:rgba(0,255,65,0.03);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;transition:all 0.4s;position:relative;overflow:hidden;}
-.slot::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.06),transparent);transition:left 0.5s;}
-.slot.available:hover::before{left:100%;}
-.slot.available{border-color:var(--g2);background:rgba(0,255,65,0.05);}
-.slot.taken{border-color:rgba(255,34,51,0.3);background:rgba(255,34,51,0.04);}
-.slot-id{font-size:18px;color:var(--g3);font-weight:600;transition:color 0.4s;}
-.slot.available .slot-id{color:var(--g0);text-shadow:0 0 10px rgba(0,255,65,0.4);}
-.slot.taken .slot-id{color:rgba(255,34,51,0.5);text-decoration:line-through;}
-.slot-status{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);transition:color 0.4s;}
-.slot.available .slot-status{color:var(--g2);}.slot.taken .slot-status{color:rgba(255,34,51,0.4);}
-.slot-bar{width:100%;height:2px;background:var(--g3);margin-top:6px;position:relative;overflow:hidden;}
-.slot.available .slot-bar::after{content:'';position:absolute;top:0;left:0;height:100%;width:40%;background:var(--g0);animation:bar-scan 2.5s linear infinite;box-shadow:0 0 6px var(--g0);}
+.scripts{display:flex;gap:8px;width:100%;margin-bottom:20px;}
+.script{flex:1;border:1px solid var(--g3);background:rgba(0,255,65,0.03);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;transition:all 0.4s;position:relative;overflow:hidden;}
+.script::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.06),transparent);transition:left 0.5s;}
+.script.available:hover::before{left:100%;}
+.script.available{border-color:var(--g2);background:rgba(0,255,65,0.05);}
+.script.taken{border-color:rgba(255,34,51,0.3);background:rgba(255,34,51,0.04);}
+.script-id{font-size:18px;color:var(--g3);font-weight:600;transition:color 0.4s;}
+.script.available .script-id{color:var(--g0);text-shadow:0 0 10px rgba(0,255,65,0.4);}
+.script.taken .script-id{color:rgba(255,34,51,0.5);text-decoration:line-through;}
+.script-status{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);transition:color 0.4s;}
+.script.available .script-status{color:var(--g2);}.script.taken .script-status{color:rgba(255,34,51,0.4);}
+.script-bar{width:100%;height:2px;background:var(--g3);margin-top:6px;position:relative;overflow:hidden;}
+.script.available .script-bar::after{content:'';position:absolute;top:0;left:0;height:100%;width:40%;background:var(--g0);animation:bar-scan 2.5s linear infinite;box-shadow:0 0 6px var(--g0);}
 @keyframes bar-scan{0%{left:-40%;}100%{left:140%;}}
-.slot.taken .slot-bar{background:rgba(255,34,51,0.3);}
+.script.taken .script-bar{background:rgba(255,34,51,0.3);}
 #cd-section{width:100%;background:rgba(0,255,65,0.03);border:1px solid var(--g3);padding:14px 18px;margin-bottom:18px;font-family:'Share Tech Mono',monospace;}
 .cd-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--g3);margin-bottom:6px;}
 .cd-timer{font-family:'VT323',monospace;font-size:clamp(48px,14vw,72px);color:var(--g0);line-height:1;text-shadow:0 0 30px rgba(0,255,65,0.4);letter-spacing:4px;}
@@ -129,18 +129,18 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
     <span>bash v5.2</span>
   </div>
   <div class="terminal">
-    <div class="prompt-line"><span class="ps">root@node:~$</span><span class="cmd">./init_booking.sh --slots=3</span></div>
-    <div class="prompt-line"><span class="ps">&gt;</span><span class="out">[OK] System online. 3 allocation slots detected.</span></div>
+    <div class="prompt-line"><span class="ps">root@node:~$</span><span class="cmd">./init_booking.sh --scripts=3</span></div>
+    <div class="prompt-line"><span class="ps">&gt;</span><span class="out">[OK] System online. 3 allocation scripts detected.</span></div>
     <div class="prompt-line" style="margin-bottom:14px;"><span class="ps">&gt;</span><span class="out">[INFO] First-come-first-served. IP-lock active.</span></div>
 
     <div class="title-block glitch">BOOK<br/><span class="sub-t">YOUR SCRIPT<span class="blink">_</span></span></div>
     <hr class="divider"/>
-    <div class="status-row"><div class="status-dot"></div><span>LIVE — 3 SLOTS ONLY — 1 IP = 1 CLAIM</span></div>
+    <div class="status-row"><div class="status-dot"></div><span>LIVE — 3 SCRIPTS ONLY — 1 IP = 1 CLAIM</span></div>
 
-    <div class="slots" id="scripts-grid">
-      <div class="slot available" id="sc1"><div class="slot-id">0x01</div><div class="slot-status">Available</div><div class="slot-bar"></div></div>
-      <div class="slot available" id="sc2"><div class="slot-id">0x02</div><div class="slot-status">Available</div><div class="slot-bar"></div></div>
-      <div class="slot available" id="sc3"><div class="slot-id">0x03</div><div class="slot-status">Available</div><div class="slot-bar"></div></div>
+    <div class="scripts" id="scripts-grid">
+      <div class="script available" id="sc1"><div class="script-id">0x01</div><div class="script-status">Available</div><div class="script-bar"></div></div>
+      <div class="script available" id="sc2"><div class="script-id">0x02</div><div class="script-status">Available</div><div class="script-bar"></div></div>
+      <div class="script available" id="sc3"><div class="script-id">0x03</div><div class="script-status">Available</div><div class="script-bar"></div></div>
     </div>
 
     <div id="cd-section">
@@ -148,9 +148,9 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
       <div class="cd-timer"><span id="cdm">00</span><span class="cd-sep">:</span><span id="cds">00</span></div>
     </div>
 
-    <button id="book-btn" onclick="bookScript()">CLAIM SLOT</button>
+    <button id="book-btn" onclick="bookScript()">CLAIM SCRIPT</button>
     <div id="msg-loading" class="msg"><span class="spin"></span>[...] Contacting server. Please wait.</div>
-    <div id="msg-full" class="msg">[ERR] All slots claimed. Connection refused.</div>
+    <div id="msg-full" class="msg">[ERR] All scripts claimed. Connection refused.</div>
     <div id="msg-booked" class="msg">[WARN] IP already registered. DM <a href="https://t.me/araby_001">@araby_001</a> to verify.</div>
 
     <div class="log-line">// <span id="log-ts">--</span> | IP-lock: ON | no-log mode</div>
@@ -195,8 +195,8 @@ function refreshUI(count){
   for(let i=1;i<=MAX;i++){
     const el=document.getElementById('sc'+i);
     const taken=i<=count;
-    el.className='slot '+(taken?'taken':'available');
-    el.querySelector('.slot-status').textContent=taken?'Claimed':'Available';
+    el.className='script '+(taken?'taken':'available');
+    el.querySelector('.script-status').textContent=taken?'Claimed':'Available';
   }
 }
 
