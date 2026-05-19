@@ -14,6 +14,9 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
   try {
+    if (req.headers['x-page-secret'] !== 'green2025') {
+  return res.status(403).json({ error: 'Forbidden' });
+}
     const sql = neon(process.env.DATABASE_URL);
     await sql`CREATE TABLE IF NOT EXISTS claims (ip TEXT PRIMARY KEY, token TEXT)`;
     await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS token TEXT`;  // fixes existing tables
