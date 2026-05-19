@@ -13,23 +13,39 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
+
   try {
     if (req.headers['x-page-secret'] !== 'green2025') {
-  return res.status(403).json({ error: 'Forbidden' });
-}
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const sql = neon(process.env.DATABASE_URL);
+
     await sql`CREATE TABLE IF NOT EXISTS claims (ip TEXT PRIMARY KEY, token TEXT)`;
-    await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS token TEXT`;  // fixes existing tables
+    await sql`ALTER TABLE claims ADD COLUMN IF NOT EXISTS token TEXT`;
+
+    const { pagetoken } = req.body || {};
+    if (!pagetoken) return res.status(403).json({ error: 'No token' });
+
+    const tokenRows = await sql`SELECT * FROM page_tokens WHERE token=${pagetoken} AND used=false`;
+    if (!tokenRows.length) return res.status(403).json({ error: 'Invalid token' });
+
+    await sql`UPDATE page_tokens SET used=true WHERE token=${pagetoken}`;
+
     const forwarded = req.headers['x-forwarded-for'];
     const ip = forwarded ? forwarded.split(',')[0].trim() : '0.0.0.0';
+
     const rows = await sql`SELECT COUNT(*) as count FROM claims`;
     const claimed = parseInt(rows[0].count);
+
     const already = await sql`SELECT token FROM claims WHERE ip=${ip}`;
     if (already.length) return res.json({ ok: false, reason: 'already_claimed', claimed });
     if (claimed >= 1) return res.json({ ok: false, reason: 'full', claimed });
+
     const token = generateToken();
     await sql`INSERT INTO claims (ip, token) VALUES (${ip}, ${token})`;
     res.json({ ok: true, claimed: claimed + 1, slot: claimed + 1, token });
+
   } catch(e) {
     console.error(e);
     res.status(500).json({ error: e.message });
