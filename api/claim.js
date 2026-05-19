@@ -35,16 +35,18 @@ export default async function handler(req, res) {
     const forwarded = req.headers['x-forwarded-for'];
     const ip = forwarded ? forwarded.split(',')[0].trim() : '0.0.0.0';
 
-    const rows = await sql`SELECT COUNT(*) as count FROM claims`;
-    const claimed = parseInt(rows[0].count);
-
-    const already = await sql`SELECT token FROM claims WHERE ip=${ip}`;
-    if (already.length) return res.json({ ok: false, reason: 'already_claimed', claimed });
-    if (claimed >= 1) return res.json({ ok: false, reason: 'full', claimed });
-
-    const token = generateToken();
-    await sql`INSERT INTO claims (ip, token) VALUES (${ip}, ${token})`;
-    res.json({ ok: true, claimed: claimed + 1, slot: claimed + 1, token });
+    const result = await sql.transaction(async (sql) => {
+  await sql`LOCK TABLE claims IN EXCLUSIVE MODE`;
+  const rows = await sql`SELECT COUNT(*) as count FROM claims`;
+  const claimed = parseInt(rows[0].count);
+  const already = await sql`SELECT token FROM claims WHERE ip=${ip}`;
+  if (already.length) return { ok: false, reason: 'already_claimed', claimed };
+  if (claimed >= 1) return { ok: false, reason: 'full', claimed };
+  const token = generateToken();
+  await sql`INSERT INTO claims (ip, token) VALUES (${ip}, ${token})`;
+  return { ok: true, claimed: claimed + 1, slot: claimed + 1, token };
+});
+res.json(result);
 
   } catch(e) {
     console.error(e);
