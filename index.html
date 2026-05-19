@@ -211,7 +211,10 @@ function showMsg(id){
 async function bookScript(){
   showMsg('msg-loading');
   try{
-    const res = await fetch('/api/claim', {method: 'POST'});
+    const res = await fetch('/api/claim', {
+  method: 'POST',
+  headers: { 'x-page-secret': 'green2025' }
+});
     const data = await res.json();
 
     if(data.ok){
